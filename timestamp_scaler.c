@@ -9,6 +9,8 @@
 
 #define MAX_LENGTH_FILENAME_CSV 260
 #define MAX_LINE_LENGTH_CSV 256
+#define DIFFERENCE_FILENAME "difference.csv"
+#define NUM_COLUMNS 6
 
 /* Required Adjustable Parameters END ************************************************/
 
@@ -24,9 +26,9 @@
 
 /* Optional Adjustable Parameters END ************************************************/
 
-void convert_line(FILE* output_file, char* line, const time_t* unix_time_data_start_day, const time_t* unix_time_data_start_week, const time_t* offset){
+void convert_line(FILE* output_file, FILE* difference_file, char* line, const time_t* unix_time_data_start_day, const time_t* unix_time_data_start_week, const time_t* offset){
 	char* end_ptr = line;
-	const int NUM_COLUMNS = 6;
+	double data[NUM_COLUMNS];
 	int i = 0;
 	for(; i < NUM_COLUMNS; i++){
 		double value = strtod(end_ptr, &end_ptr);
@@ -37,6 +39,7 @@ void convert_line(FILE* output_file, char* line, const time_t* unix_time_data_st
 		}else if(i == 4){
 			value = fmod(value, 604800.0) + (double) (*unix_time_data_start_week);
 		}
+		data[i] = value;
 		fprintf(output_file, "%f", value);
 		if(i < NUM_COLUMNS - 1){
 			fprintf(output_file, "%s", ",");
@@ -44,7 +47,9 @@ void convert_line(FILE* output_file, char* line, const time_t* unix_time_data_st
 			fprintf(output_file, "%s", "\n");
 		}
 		for(; *end_ptr != '\0' && (*end_ptr < '0' || *end_ptr > '9'); end_ptr++);
-	}	
+	}
+	fprintf(difference_file, "%f,%f,%f,%f,%f,%f\n", data[0] - data[NUM_COLUMNS-1], data[1] - data[NUM_COLUMNS-1], data[2] - data[NUM_COLUMNS-1], 
+			data[3] - data[NUM_COLUMNS-1], data[4] - data[NUM_COLUMNS-1], 0.0);
 }
 
 double min_camera_start_time(FILE* input_file){
@@ -73,6 +78,7 @@ double min_camera_start_time(FILE* input_file){
 int main(){
 	FILE* file;
 	FILE* output_file;
+	FILE* difference_file;
 	char* output_filename;
 	char* filename;
         char* line;
@@ -136,11 +142,22 @@ int main(){
 	printf("%s", "Enter Unix time at start of the day of data collection: ");
 	fscanf(stdin, "%ld", &unix_time_data_start_day);
 #endif
+	difference_file = fopen(DIFFERENCE_FILENAME, "w");
+	if(difference_file == NULL){
+		printf("%s\n", "Failed to open difference file. ");
+		return 1;
+	}
+	fclose(difference_file);
+	difference_file = fopen(DIFFERENCE_FILENAME, "a");
+	if(difference_file == NULL){
+		printf("%s\n", "Failed to open difference file. ");
+		return 1;
+	}
 	min = min_camera_start_time(file);
 	offset = unix_time_data_start - unix_time_data_start_day - (min / 1000000000);
 	line = (char*) malloc(sizeof(char) * MAX_LINE_LENGTH_CSV);
 	while(fgets(line, MAX_LINE_LENGTH_CSV, file) != NULL){
-		convert_line(output_file, line, &unix_time_data_start_day, &unix_time_data_start_week, &offset);
+		convert_line(output_file, difference_file, line, &unix_time_data_start_day, &unix_time_data_start_week, &offset);
 	}
 	free(line);
 	fclose(output_file);
