@@ -16,8 +16,9 @@
 
 /* Optional Adjustable Parameters START **********************************************/
 
-/* If ASSUME_UNIX_TIME is defined, this assumes the input CSV file already has UNIX time. */
+/* If ASSUME_UNIX_TIME is defined, this assumes the input CSV file already has UNIX time (instead of camera time) for camera data. */
 #define ASSUME_UNIX_TIME
+
 #define UNIX_TIME_DATA_START 1742241600
 #define UNIX_TIME_DATA_START_DAY 1742184000
 
@@ -58,6 +59,7 @@ void convert_line(FILE* output_file, FILE* difference_file, char* line, const ti
 			data[3] - data[NUM_COLUMNS-1], data[4] - data[NUM_COLUMNS-1], 0.0);
 }
 
+#ifndef ASSUME_UNIX_TIME
 double min_camera_start_time(FILE* input_file){
 	double min = DBL_MAX;
 	char* end_ptr;
@@ -80,6 +82,7 @@ double min_camera_start_time(FILE* input_file){
 	rewind(input_file);
 	return min;
 }
+#endif
 
 int main(){
 	FILE* file;
@@ -88,9 +91,11 @@ int main(){
 	char* output_filename;
 	char* filename;
         char* line;
+#ifndef ASSUME_UNIX_TIME
 	double min;
-	time_t offset;
 	time_t unix_time_data_start = 0;
+#endif
+	time_t offset = 0;
 	time_t unix_time_data_start_day = 0;
 	time_t unix_time_data_start_week = 0;
 	filename = (char*) malloc(sizeof(char) * MAX_LENGTH_FILENAME_CSV);
@@ -128,11 +133,13 @@ int main(){
 		printf("%s\n", "Failed to open output file. ");
 		return 1;
 	}
+#ifndef ASSUME_UNIX_TIME
 #ifdef UNIX_TIME_DATA_START
 	unix_time_data_start = UNIX_TIME_DATA_START;
 #else
 	printf("%s", "Enter Unix time at start of data collection: ");
 	fscanf(stdin, "%ld", &unix_time_data_start);
+#endif
 #endif
 
 #ifdef UNIX_TIME_DATA_START_WEEK
@@ -159,8 +166,10 @@ int main(){
 		printf("%s\n", "Failed to open difference file. ");
 		return 1;
 	}
+#ifndef ASSUME_UNIX_TIME
 	min = min_camera_start_time(file);
 	offset = unix_time_data_start - unix_time_data_start_day - (min / 1000000000);
+#endif
 	line = (char*) malloc(sizeof(char) * MAX_LINE_LENGTH_CSV);
 	while(fgets(line, MAX_LINE_LENGTH_CSV, file) != NULL){
 		convert_line(output_file, difference_file, line, &unix_time_data_start_day, &unix_time_data_start_week, &offset);
