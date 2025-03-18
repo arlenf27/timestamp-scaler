@@ -16,11 +16,13 @@
 
 /* Optional Adjustable Parameters START **********************************************/
 
-#define UNIX_TIME_DATA_START 1741983780
-#define UNIX_TIME_DATA_START_DAY 1741924800
+/* If ASSUME_UNIX_TIME is defined, this assumes the input CSV file already has UNIX time. */
+#define ASSUME_UNIX_TIME
+#define UNIX_TIME_DATA_START 1742241600
+#define UNIX_TIME_DATA_START_DAY 1742184000
 
 /* Start of week is on SUNDAY in this case. */
-#define UNIX_TIME_DATA_START_WEEK 1741496400
+#define UNIX_TIME_DATA_START_WEEK 1742083200
 
 /* Can optionally add macros for input (INPUT_FILENAME) and output (OUTPUT_FILENAME) filenames here. */
 
@@ -33,7 +35,11 @@ void convert_line(FILE* output_file, FILE* difference_file, char* line, const ti
 	for(; i < NUM_COLUMNS; i++){
 		double value = strtod(end_ptr, &end_ptr);
 		if(i >= 0 && i <= 2){
+#ifdef ASSUME_UNIX_TIME
+			value /= 1000000000.0;
+#else
 			value = value / 1000000000.0 + (double) (*offset) + (double) (*unix_time_data_start_day);
+#endif
 		}else if(i == 3){
 			value /= 1000000;
 		}else if(i == 4){
