@@ -19,13 +19,7 @@
 /* If ASSUME_UNIX_TIME is defined, this assumes the input CSV file already has UNIX time (instead of camera time) for camera data. */
 #define ASSUME_UNIX_TIME
 
-#define UNIX_TIME_DATA_START 1742241600
-#define UNIX_TIME_DATA_START_DAY 1742184000
-
-/* Start of week is on SUNDAY in this case. */
-#define UNIX_TIME_DATA_START_WEEK 1742083200
-
-/* Can optionally add macros for input (INPUT_FILENAME) and output (OUTPUT_FILENAME) filenames here. */
+/* Can optionally add macros for INPUT_FILENAME, OUTPUT_FILENAME, UNIX_TIME_DATA_START, UNIX_TIME_DATA_START_DAY, and UNIX_TIME_DATA_START_WEEK here. */
 
 /* Optional Adjustable Parameters END ************************************************/
 
@@ -149,11 +143,13 @@ int main(){
 	fscanf(stdin, "%ld", &unix_time_data_start_week);
 #endif
 
+#ifndef ASSUME_UNIX_TIME
 #ifdef UNIX_TIME_DATA_START_DAY
 	unix_time_data_start_day = UNIX_TIME_DATA_START_DAY;
 #else
 	printf("%s", "Enter Unix time at start of the day of data collection: ");
 	fscanf(stdin, "%ld", &unix_time_data_start_day);
+#endif
 #endif
 	difference_file = fopen(DIFFERENCE_FILENAME, "w");
 	if(difference_file == NULL){
