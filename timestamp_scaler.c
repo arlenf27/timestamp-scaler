@@ -172,6 +172,7 @@ int main(){
 	}
 	free(line);
 	fclose(output_file);
+	fclose(difference_file);
 	fclose(file);
 	return 0;
 }
