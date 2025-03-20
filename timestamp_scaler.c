@@ -19,8 +19,6 @@
 /* If ASSUME_UNIX_TIME is defined, this assumes the input CSV file already has UNIX time (instead of camera time) for camera data. */
 #define ASSUME_UNIX_TIME
 
-/* Can optionally add macros for INPUT_FILENAME, OUTPUT_FILENAME, UNIX_TIME_DATA_START, UNIX_TIME_DATA_START_DAY, and UNIX_TIME_DATA_START_WEEK here. */
-
 /* Optional Adjustable Parameters END ************************************************/
 
 void convert_line(FILE* output_file, FILE* difference_file, char* line, const time_t* unix_time_data_start_day, const time_t* unix_time_data_start_week, const time_t* offset){
@@ -93,13 +91,9 @@ int main(){
 	time_t unix_time_data_start_day = 0;
 	time_t unix_time_data_start_week = 0;
 	filename = (char*) malloc(sizeof(char) * MAX_LENGTH_FILENAME_CSV);
-#ifdef INPUT_FILENAME
-	filename = INPUT_FILENAME;
-#else
 	printf("%s", "Enter absolute or relative path and name of CSV file: ");
 	fgets(filename, MAX_LENGTH_FILENAME_CSV, stdin);
 	*(filename + strlen(filename) - 1) = '\0';
-#endif
 	file = fopen(filename, "r");
 	free(filename);
 	if(file == NULL){
@@ -107,13 +101,9 @@ int main(){
 		return 1;
 	}
 	output_filename = (char*) malloc(sizeof(char) * MAX_LENGTH_FILENAME_CSV);
-#ifdef OUTPUT_FILENAME
-	output_filename = OUTPUT_FILENAME;
-#else
 	printf("%s", "Enter absolute or relative path and name of output file to create: ");
 	fgets(output_filename, MAX_LENGTH_FILENAME_CSV, stdin);
 	*(output_filename + strlen(output_filename) - 1) = '\0';
-#endif
 	output_file = fopen(output_filename, "w");
 	if(output_file == NULL){
 		printf("%s\n", "Failed to open output file. ");
@@ -128,28 +118,15 @@ int main(){
 		return 1;
 	}
 #ifndef ASSUME_UNIX_TIME
-#ifdef UNIX_TIME_DATA_START
-	unix_time_data_start = UNIX_TIME_DATA_START;
-#else
 	printf("%s", "Enter Unix time at start of data collection: ");
 	fscanf(stdin, "%ld", &unix_time_data_start);
 #endif
-#endif
 
-#ifdef UNIX_TIME_DATA_START_WEEK
-	unix_time_data_start_week = UNIX_TIME_DATA_START_WEEK;
-#else
 	printf("%s", "Enter Unix time at start of the week (SUNDAY) of data collection: ");
 	fscanf(stdin, "%ld", &unix_time_data_start_week);
-#endif
-
 #ifndef ASSUME_UNIX_TIME
-#ifdef UNIX_TIME_DATA_START_DAY
-	unix_time_data_start_day = UNIX_TIME_DATA_START_DAY;
-#else
 	printf("%s", "Enter Unix time at start of the day of data collection: ");
 	fscanf(stdin, "%ld", &unix_time_data_start_day);
-#endif
 #endif
 	difference_file = fopen(DIFFERENCE_FILENAME, "w");
 	if(difference_file == NULL){

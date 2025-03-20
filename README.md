@@ -9,14 +9,14 @@ To compile, any ISO-compliant C compiler should work without any errors or warni
 
 ## Input Format
 - The input file must be a CSV file with ***no header***. 
-- Columns 1 to 3 are for the 3 Teledyne Blackfly GigE cameras; input is in Unix time (nanoseconds) OR camera time already multiplied by 8. For more details about timestamp scaling if the data is in camera time, see https://www.teledynevisionsolutions.com/support/support-center/application-note/iis/synchronizing-a-blackfly-or-grasshopper3-gige-cameras-time-to-pc-time/. By default, this program takes in the Unix time. ***To handle parameters and options required if camera time is used, `ASSUME_UNIX_TIME` must not be defined and the unix time (seconds) for the start of the day of data collection and start of data collection must be specified either through defined macros or user input with appropriate values.*** 
+- Columns 1 to 3 are for the 3 Teledyne Blackfly GigE cameras; input is in Unix time (nanoseconds) OR camera time already multiplied by 8. For more details about timestamp scaling if the data is in camera time, see https://www.teledynevisionsolutions.com/support/support-center/application-note/iis/synchronizing-a-blackfly-or-grasshopper3-gige-cameras-time-to-pc-time/. By default, this program takes in the Unix time. ***To handle parameters and options required if camera time is used, `ASSUME_UNIX_TIME` must not be defined and the unix time (seconds) for the start of the day of data collection and start of data collection must be specified through user input with appropriate values.*** 
 - Column 4 is for the Cepton LiDAR; input is in Unix time (microseconds). 
 - Column 5 is for the GPS; input is in the form of amount of seconds elapsed since the start of the week (Sunday). 
 - Column 6 is the local time; input is in Unix time (seconds). 
 
 ## Parameters
 - There are 4 required adjustable parameters: `MAX_LENGTH_FILENAME_CSV`, `MAX_LINE_LENGTH_CSV`, `DIFFERENCE_FILENAME`, and `NUM_COLUMNS`. 
-- There are 6 optional adjustable parameters: `ASSUME_UNIX_TIME` (No corresponding value required or used), `UNIX_TIME_DATA_START`, `UNIX_TIME_DATA_START_DAY`, `UNIX_TIME_DATA_START_WEEK`, `INPUT_FILENAME`, and `OUTPUT_FILENAME`. Except for `ASSUME_UNIX_TIME`, ***all other optional parameters will be filled through user input if and only if macros for each parameter are not defined***. 
+- There is 1 optional adjustable parameter: `ASSUME_UNIX_TIME` (No corresponding value required or used) - See Input Format Columns 1 to 3 for more details on this parameter. 
 
 ## Outputs
 - A CSV file (with user-specified name by default) with scaled outputs, all in Unix time (seconds). 
