@@ -5,7 +5,7 @@ This program takes input from a CSV file for the timestamps of cameras, a LiDAR,
 This program requires no dependencies other than a C compiler and library that is compliant with any ISO C standard (ANSI/C89/C90, C99, C11, C17, C23, etc.). It is only dependent on the ANSI/C89/C90 versions of standard C libraries such as limits.h, time.h, math.h, float.h, etc.
 
 ## Usage
-To compile, any ISO-compliant C compiler should work without any errors or warnings. For instance, `gcc -ansi -pedantic -Wall -o timestamp_scaler.exe timestamp_scaler.c` will work. 
+To compile, any ISO-compliant C compiler should work without any errors or warnings. For instance, `gcc -ansi -pedantic -Wall -o timestamp_scaler.exe timestamp_scaler.c -lm` will work. 
 
 ## Input Format
 - The input file must be a CSV file with ***no header***. 
