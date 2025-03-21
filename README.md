@@ -2,10 +2,20 @@
 This program takes input from a CSV file for the timestamps of cameras, a LiDAR, a GPS, and the local PC time of each data point. It then converts the data to standard Unix time and measures the difference between each timestamp relative to the local time. 
 
 ## Dependencies
-This program requires no dependencies other than a C compiler and library that is compliant with any ISO C standard (ANSI/C89/C90, C99, C11, C17, C23, etc.). It is only dependent on the ANSI/C89/C90 versions of standard C libraries such as limits.h, time.h, math.h, float.h, etc.
+This program requires no dependencies other than a C compiler and library that is compliant with any ISO C standard (ANSI/C89/C90, C99, C11, C17, C23, etc.). It is only dependent on the ANSI/C89/C90 versions of standard C libraries such as stdio.h, stdlib.h, string.h, time.h, math.h, and float.h.
 
 ## Usage
-To compile, any ISO-compliant C compiler should work without any errors or warnings. For instance, `gcc -ansi -pedantic -Wall -o timestamp_scaler.exe timestamp_scaler.c -lm` will work. 
+To compile, any ISO-compliant C compiler should work without any errors or warnings. For instance, `gcc -ansi -pedantic -Wall -o timestamp_scaler.exe timestamp_scaler.c -lm` will work on most Linux distributions.   
+Just make sure that libraries including the following standard ISO ANSI/C89/C90/C95/C99/C11/C17/C23  headers are included: 
+- stdio.h
+- stdlib.h
+- string.h
+- math.h
+- float.h (On many Linux distributions, this is included in libm instead of libc)
+- time.h
+
+A makefile has been included that provides an example compilation command for GCC that works on most Linux/MacOS distributions (not tested on Windows GCC ports). 
+
 
 ## Input Format
 - The input file must be a CSV file with ***no header***. 
