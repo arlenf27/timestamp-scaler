@@ -19,7 +19,7 @@
 /* Optional Adjustable Parameters END ************************************************/
 
 void convert_data(timestamp_dataset* dataset, FILE* output_file, FILE* difference_file, time_t unix_time_data_start_day, time_t unix_time_data_start_week, time_t offset){
-	const double*** data = get_data(dataset);
+	const double* const* const* data = get_data(dataset);
 	int r = 0;
 	for(; r < get_size(dataset); r++){
 		double values[NUM_COLUMNS];
@@ -123,6 +123,10 @@ int main(){
 
 	/* Dataset reading and creation */
 	dataset = timestamp_dataset_create(file);
+	if(dataset == NULL){
+		printf("%s\n", "Failed to initialize dataset from file. ");
+		return 1;
+	}
 
 #ifndef ASSUME_UNIX_TIME
 	min = min_camera_start_time(dataset);

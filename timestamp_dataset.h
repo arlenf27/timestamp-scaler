@@ -14,10 +14,11 @@ typedef struct timestamp_dataset timestamp_dataset;
  * file: input CSV file, required to be empty and open for appending */ 
 timestamp_dataset* timestamp_dataset_create(FILE* file);
 
-/* Returns data as const pointer to matrix. 
+/* Returns data as const pointer to matrix (dereferencing once gets the row pointer).
+ * The matrix is not modifiable at any level.  
  * Requires timestamp_dataset_create() to already have been called for dataset
  * dataset: dataset to get data from */
-const double*** get_data(timestamp_dataset* dataset);
+const double* const* const* get_data(timestamp_dataset* dataset);
 
 /* Returns earliest camera time as start time. 
  * Requires timestamp_dataset_create() to already have been called for dataset

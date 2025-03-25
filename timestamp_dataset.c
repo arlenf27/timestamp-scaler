@@ -28,12 +28,12 @@ timestamp_dataset* timestamp_dataset_create(FILE* file){
 	return dataset;
 }
 
-const double*** get_data(timestamp_dataset* dataset){
-	return (const double***) dataset->data;
+const double* const* const* get_data(timestamp_dataset* dataset){
+	return (const double* const* const*) dataset->data;
 }
 
 double min_camera_start_time(timestamp_dataset* dataset){
-	return dataset->min;
+	return (dataset->size > 0) ? dataset->min : 0.0;
 }
 
 size_t get_size(timestamp_dataset* dataset){
@@ -70,19 +70,19 @@ int read_data(FILE* file, timestamp_dataset* dataset){
 				dataset->min = value;
 			}
 		}
+		dataset->size++;
 		r++;
 		/* Double table capacity when current capacity is around 70% filled. */
 		if((double) r >= (double) dataset->capacity * (double) 0.7){
-			double** new_alloc_ptr = (double**) realloc(*(dataset->data), dataset->capacity * 2 * sizeof(double));
+			double** new_alloc_ptr = (double**) realloc(*(dataset->data), dataset->capacity * 2 * sizeof(double*));
 			if(new_alloc_ptr == NULL){
-				free(*(dataset->data));
+				timestamp_dataset_destroy(dataset);
 				return 0;
 			}else{
 				*(dataset->data) = new_alloc_ptr;
 			}
 			dataset->capacity *= 2;
 		}
-		dataset->size++;
 	}
 	free(line);
 	return 1;
