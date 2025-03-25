@@ -1,16 +1,13 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <float.h>
 #include <math.h>
+#include "timestamp_dataset.h"
 
 /* Required Adjustable Parameters START **********************************************/
 
 #define MAX_LENGTH_FILENAME_CSV 260
-#define MAX_LINE_LENGTH_CSV 256
 #define DIFFERENCE_FILENAME "difference.csv"
-#define NUM_COLUMNS 6
 
 /* Required Adjustable Parameters END ************************************************/
 
@@ -21,60 +18,42 @@
 
 /* Optional Adjustable Parameters END ************************************************/
 
-void convert_line(FILE* output_file, FILE* difference_file, char* line, const time_t* unix_time_data_start_day, const time_t* unix_time_data_start_week, const time_t* offset){
-	char* end_ptr = line;
-	double data[NUM_COLUMNS];
-	int i = 0;
-	for(; i < NUM_COLUMNS; i++){
-		double value = strtod(end_ptr, &end_ptr);
-		if(i >= 0 && i <= 2){
+void convert_data(timestamp_dataset* dataset, FILE* output_file, FILE* difference_file, time_t unix_time_data_start_day, time_t unix_time_data_start_week, time_t offset){
+	const double*** data = get_data(dataset);
+	int r = 0;
+	for(; r < get_size(dataset); r++){
+		double values[NUM_COLUMNS];
+		int i = 0;
+		for(; i < NUM_COLUMNS; i++){
+			if(i >= 0 && i <= 2){
 #ifdef ASSUME_UNIX_TIME
-			value /= 1000000000.0;
+				values[i] = (*(*(*data+r)+i)) / 1000000000.0;
 #else
-			value = value / 1000000000.0 + (double) (*offset) + (double) (*unix_time_data_start_day);
+				values[i] = (*(*(*data+r)+i)) / 1000000000.0 + (double) offset + (double) unix_time_data_start_day;
 #endif
-		}else if(i == 3){
-			value /= 1000000;
-		}else if(i == 4){
-			value = fmod(value, 604800.0) + (double) (*unix_time_data_start_week);
+			}else if(i == 3){
+				values[i] = (*(*(*data+r)+i)) / 1000000.0;
+			}else if(i == 4){
+				values[i] = fmod((*(*(*data+r)+i)), 604800.0) + (double) unix_time_data_start_week;
+			}else if(i == 5){
+				values[i] = (*(*(*data+r)+i));
+			}
+			fprintf(output_file, "%f", values[i]);
+			if(i < NUM_COLUMNS - 1){
+				fprintf(output_file, "%s", ",");
+			}else{
+				fprintf(output_file, "%s", "\n");
+			}
 		}
-		data[i] = value;
-		fprintf(output_file, "%f", value);
-		if(i < NUM_COLUMNS - 1){
-			fprintf(output_file, "%s", ",");
-		}else{
-			fprintf(output_file, "%s", "\n");
-		}
-		for(; *end_ptr != '\0' && (*end_ptr < '0' || *end_ptr > '9'); end_ptr++);
-	}
-	fprintf(difference_file, "%f,%f,%f,%f,%f,%f\n", data[0] - data[NUM_COLUMNS-1], data[1] - data[NUM_COLUMNS-1], data[2] - data[NUM_COLUMNS-1], 
-			data[3] - data[NUM_COLUMNS-1], data[4] - data[NUM_COLUMNS-1], 0.0);
-}
-
-#ifndef ASSUME_UNIX_TIME
-double min_camera_start_time(FILE* input_file){
-	double min = DBL_MAX;
-	char* end_ptr;
-	char* line = (char*) malloc(sizeof(char) * MAX_LINE_LENGTH_CSV);
-	while(fgets(line, MAX_LINE_LENGTH_CSV, input_file) != NULL){
-		int i;
-		double values[3];
-		values[0] = strtod(line, &end_ptr);
-		for(; *end_ptr < '0' || *end_ptr > '9'; end_ptr++);
-		values[1] = strtod(end_ptr, &end_ptr);
-		for(; *end_ptr < '0' || *end_ptr > '9'; end_ptr++);
-		values[2] = strtod(end_ptr, &end_ptr);
-		for(i = 0; i < 3; i++){
-			if(values[i] < min){
-				min = values[i];
+		for(i = 0; i < NUM_COLUMNS; i++){
+			if(i < NUM_COLUMNS - 1){
+				fprintf(difference_file, "%f,", values[i] - values[NUM_COLUMNS-1]);
+			}else{
+				fprintf(difference_file, "%f\n", values[i] - values[NUM_COLUMNS-1]);
 			}
 		}
 	}
-	free(line);
-	rewind(input_file);
-	return min;
 }
-#endif
 
 int main(){
 	FILE* file;
@@ -82,7 +61,6 @@ int main(){
 	FILE* difference_file;
 	char* output_filename;
 	char* filename;
-        char* line;
 #ifndef ASSUME_UNIX_TIME
 	double min;
 	time_t unix_time_data_start = 0;
@@ -90,6 +68,9 @@ int main(){
 	time_t offset = 0;
 	time_t unix_time_data_start_day = 0;
 	time_t unix_time_data_start_week = 0;
+	timestamp_dataset* dataset;
+
+	/* Input/Output Prompting */
 	filename = (char*) malloc(sizeof(char) * MAX_LENGTH_FILENAME_CSV);
 	printf("%s", "Enter absolute or relative path and name of CSV file: ");
 	fgets(filename, MAX_LENGTH_FILENAME_CSV, stdin);
@@ -139,15 +120,19 @@ int main(){
 		printf("%s\n", "Failed to open difference file. ");
 		return 1;
 	}
+
+	/* Dataset reading and creation */
+	dataset = timestamp_dataset_create(file);
+
 #ifndef ASSUME_UNIX_TIME
-	min = min_camera_start_time(file);
+	min = min_camera_start_time(dataset);
 	offset = unix_time_data_start - unix_time_data_start_day - (min / 1000000000);
 #endif
-	line = (char*) malloc(sizeof(char) * MAX_LINE_LENGTH_CSV);
-	while(fgets(line, MAX_LINE_LENGTH_CSV, file) != NULL){
-		convert_line(output_file, difference_file, line, &unix_time_data_start_day, &unix_time_data_start_week, &offset);
-	}
-	free(line);
+	
+	/* Converting and writing output */
+	convert_data(dataset, output_file, difference_file, unix_time_data_start_day, unix_time_data_start_week, offset);
+
+	timestamp_dataset_destroy(dataset);	
 	fclose(output_file);
 	fclose(difference_file);
 	fclose(file);

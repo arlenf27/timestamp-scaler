@@ -5,7 +5,7 @@ This program takes input from a CSV file for the timestamps of cameras, a LiDAR,
 This program requires no dependencies other than a C compiler and library that is compliant with any ISO C standard (ANSI/C89/C90, C99, C11, C17, C23, etc.). It is only dependent on the ANSI/C89/C90 versions of standard C libraries such as stdio.h, stdlib.h, string.h, time.h, math.h, and float.h. ***For guaranteed results, compile on a Linux/MacOS distribution. Please note that using a Windows C library (e.g. MinGW-w64 libraries) may result in undefined behavior or unexpected warnings/errors! For instance, Windows libraries often use the LLP64 data model (where long int is 32 bits) instead of the LP64 data model. Also, time_t may be defined differently in ANSI C Windows libraries when compared to ANSI C MacOS or Linux libraries.***
 
 ## Usage
-To compile on Linux/MacOS, any ISO-compliant C compiler should work without any errors or warnings. For instance, `gcc -ansi -pedantic -Wall -o timestamp_scaler timestamp_scaler.c -lm` will work on most Linux/MacOS distributions.   
+To compile on Linux/MacOS, any ISO-compliant C compiler should work without any errors or warnings. For instance, `gcc -ansi -pedantic -Wall -o timestamp_scaler timestamp_scaler.c timestamp_dataset.c -lm` will work on most Linux/MacOS distributions.   
 Just make sure that libraries including the following standard ISO ANSI/C89/C90/C95/C99/C11/C17/C23 headers are included: 
 - stdio.h
 - stdlib.h
@@ -25,7 +25,8 @@ A makefile has been included that provides an example compilation command for GC
 - Column 6 is the local time; input is in Unix time (seconds). 
 
 ## Parameters
-- There are 4 required adjustable parameters: `MAX_LENGTH_FILENAME_CSV`, `MAX_LINE_LENGTH_CSV`, `DIFFERENCE_FILENAME`, and `NUM_COLUMNS`. 
+- There are 2 required adjustable parameters: `MAX_LENGTH_FILENAME_CSV` and `DIFFERENCE_FILENAME`. 
+- Additionally, pay attention to the value of `MAX_LINE_LENGTH_CSV` in timestamp_dataset.c as well as `NUM_COLUMNS` in timestamp_dataset.h in case the format of the input file changes. 
 - There is 1 optional adjustable parameter: `ASSUME_UNIX_TIME` (No corresponding value required or used) - See Input Format Columns 1 to 3 for more details on this parameter. 
 
 ## Outputs
