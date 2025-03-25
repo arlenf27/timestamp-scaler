@@ -7,7 +7,7 @@
 #define MAX_LINE_LENGTH_CSV 256
 
 struct timestamp_dataset{
-	double*** data;
+	const double*** data;
 	size_t size;
 	size_t capacity;
 	double min;
@@ -17,8 +17,8 @@ int read_data(FILE* file, timestamp_dataset* dataset);
 
 timestamp_dataset* timestamp_dataset_create(FILE* file){
 	timestamp_dataset* dataset = (timestamp_dataset*) malloc(sizeof(timestamp_dataset));
-	dataset->data = (double***) malloc(sizeof(double**));
-	*(dataset->data) = (double**) malloc(INITIAL_CAPACITY * sizeof(double*));
+	dataset->data = (const double***) malloc(sizeof(double**));
+	*(dataset->data) = (const double**) malloc(INITIAL_CAPACITY * sizeof(double*));
 	dataset->size = 0;
 	dataset->capacity = INITIAL_CAPACITY;
 	dataset->min = DBL_MAX;
@@ -29,7 +29,7 @@ timestamp_dataset* timestamp_dataset_create(FILE* file){
 }
 
 const double*** get_data(timestamp_dataset* dataset){
-	return (const double***) dataset->data;
+	return dataset->data;
 }
 
 double min_camera_start_time(timestamp_dataset* dataset){
@@ -44,12 +44,12 @@ void timestamp_dataset_destroy(timestamp_dataset* dataset){
 	int r = 0;
 	for(; r < dataset->size; r++){
 		/* Free data for each row. */
-		free(*(*(dataset->data)+r));
+		free((double*) *(*(dataset->data)+r));
 	}
 	/* Free all rows. */
-	free(*(dataset->data));
+	free((double**) *(dataset->data));
 	/* Free data pointer. */
-	free(dataset->data);
+	free((double***) dataset->data);
 	/* Free timestamp_dataset structure. */
 	free(dataset);
 }
@@ -60,29 +60,30 @@ int read_data(FILE* file, timestamp_dataset* dataset){
 	while(fgets(line, MAX_LINE_LENGTH_CSV, file) != NULL){
 		int i = 0;
 		char* end_ptr = line;
-		*(*(dataset->data)+r) = (double*) malloc(NUM_COLUMNS * sizeof(double));
+		double* temp = (double*) malloc(NUM_COLUMNS * sizeof(double));
 		for(; i < NUM_COLUMNS; i++){
 			double value = strtod(end_ptr, &end_ptr);
-			*(*(*(dataset->data)+r)+i) = value;
+			*(temp+i) = value;
 			for(; *end_ptr != '\0' && (*end_ptr < '0' || *end_ptr > '9'); end_ptr++);
 			/* Check if this is camera min or not. */
 			if(i >= 0 && i <= 2 && value < dataset->min){
 				dataset->min = value;
 			}
 		}
+		*(*(dataset->data)+r) = (const double*) temp;
+		dataset->size++;
 		r++;
 		/* Double table capacity when current capacity is around 70% filled. */
 		if((double) r >= (double) dataset->capacity * (double) 0.7){
-			double** new_alloc_ptr = (double**) realloc(*(dataset->data), dataset->capacity * 2 * sizeof(double));
+			const double** new_alloc_ptr = (const double**) realloc(*(dataset->data), dataset->capacity * 2 * sizeof(double));
 			if(new_alloc_ptr == NULL){
-				free(*(dataset->data));
+				timestamp_dataset_destroy(dataset);
 				return 0;
 			}else{
 				*(dataset->data) = new_alloc_ptr;
 			}
 			dataset->capacity *= 2;
 		}
-		dataset->size++;
 	}
 	free(line);
 	return 1;
