@@ -7,10 +7,14 @@
 /* Number of columns in CSV file */
 #define NUM_COLUMNS 6
 
+/* The column in the CSV file corresponding to the data source type. */
+typedef enum source {cam_1 = 0, cam_2 = 1, cam_3 = 2, lidar = 3, gps = 4, local_time = 5} source;
+
 /* Opaque pointer to timestamp_dataset. */
 typedef struct timestamp_dataset timestamp_dataset;
 
 /* Creates a dataset and return a pointer to it. 
+ * If initialization fails, returns NULL (no need to destroy if initialization fails)
  * file: input CSV file, required to be empty and open for appending */ 
 timestamp_dataset* timestamp_dataset_create(FILE* file);
 

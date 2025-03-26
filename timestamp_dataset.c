@@ -66,7 +66,7 @@ int read_data(FILE* file, timestamp_dataset* dataset){
 			*(*(*(dataset->data)+r)+i) = value;
 			for(; *end_ptr != '\0' && (*end_ptr < '0' || *end_ptr > '9'); end_ptr++);
 			/* Check if this is camera min or not. */
-			if(i >= 0 && i <= 2 && value < dataset->min){
+			if((i == cam_1 || i == cam_2 || i == cam_3) && value < dataset->min){
 				dataset->min = value;
 			}
 		}
