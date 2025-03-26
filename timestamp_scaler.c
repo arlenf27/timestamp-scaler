@@ -24,7 +24,9 @@ void convert_data(timestamp_dataset* dataset, FILE* output_file, FILE* differenc
 		double values[NUM_COLUMNS];
 		int i = 0;
 		for(; i < NUM_COLUMNS; i++){
-			if(i == cam_1 || i == cam_2 || i == cam_3){
+			if((*(*(*data+r)+i)) == 0.0){
+				values[i] = 0.0;
+			}else if(i == cam_1 || i == cam_2 || i == cam_3){
 				if(ASSUME_UNIX_TIME){
 					values[i] = (*(*(*data+r)+i)) / 1000000000.0;
 				}else{
@@ -37,7 +39,7 @@ void convert_data(timestamp_dataset* dataset, FILE* output_file, FILE* differenc
 			}else if(i == local_time){
 				values[i] = (*(*(*data+r)+i));
 			}
-			fprintf(output_file, "%f", values[i]);
+			if(values[i] != 0.0) fprintf(output_file, "%f", values[i]);
 			if(i < NUM_COLUMNS - 1){
 				fprintf(output_file, "%s", ",");
 			}else{
@@ -45,10 +47,11 @@ void convert_data(timestamp_dataset* dataset, FILE* output_file, FILE* differenc
 			}
 		}
 		for(i = 0; i < NUM_COLUMNS; i++){
+			if(values[i] != 0.0) fprintf(difference_file, "%f", values[i] - values[NUM_COLUMNS-1]);
 			if(i < NUM_COLUMNS - 1){
-				fprintf(difference_file, "%f,", values[i] - values[NUM_COLUMNS-1]);
+				fprintf(difference_file, "%s", ",");
 			}else{
-				fprintf(difference_file, "%f\n", values[i] - values[NUM_COLUMNS-1]);
+				fprintf(difference_file, "%s", "\n");
 			}
 		}
 	}

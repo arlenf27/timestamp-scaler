@@ -60,11 +60,18 @@ int read_data(FILE* file, timestamp_dataset* dataset){
 	while(fgets(line, MAX_LINE_LENGTH_CSV, file) != NULL){
 		int i = 0;
 		char* end_ptr = line;
-		*(*(dataset->data)+r) = (double*) malloc(NUM_COLUMNS * sizeof(double));
-		for(; i < NUM_COLUMNS; i++){
-			double value = strtod(end_ptr, &end_ptr);
+		*(*(dataset->data)+r) = (double*) calloc(NUM_COLUMNS, sizeof(double));
+		for(; i < NUM_COLUMNS && *end_ptr != '\0'; i++){
+			double value;
+			for(; *end_ptr == ' '; end_ptr++);
+			if(*end_ptr == ','){
+				end_ptr++;
+				continue;
+			}
+			value = strtod(end_ptr, &end_ptr);
 			*(*(*(dataset->data)+r)+i) = value;
-			for(; *end_ptr != '\0' && (*end_ptr < '0' || *end_ptr > '9'); end_ptr++);
+			for(; *end_ptr != '\0' && *end_ptr != ',' && (*end_ptr < '0' || *end_ptr > '9'); end_ptr++);
+			if(*end_ptr == ',') end_ptr++;
 			/* Check if this is camera min or not. */
 			if((i == cam_1 || i == cam_2 || i == cam_3) && value < dataset->min){
 				dataset->min = value;
